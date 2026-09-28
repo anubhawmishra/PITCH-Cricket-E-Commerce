@@ -1,0 +1,405 @@
+@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-carbon: #000000;
+  --color-carbonRaised: #0e0e0e;
+  --color-carbonMid: #1a1a1a;
+  --color-willow: #E60000;
+  --color-willow-dim: rgba(230, 0, 0, 0.25);
+  --color-seam: #FF0000;
+  --color-pitch: #050505;
+  --color-bone: #F5F5F0;
+  --color-bone-dim: rgba(245, 245, 240, 0.55);
+  --color-chrome: #6b6b6b;
+  --color-chrome-light: #9a9a9a;
+  --font-display: 'Unbounded', sans-serif;
+  --font-sans: 'Inter', sans-serif;
+  --font-mono: 'Space Mono', monospace;
+}
+
+:root {
+  --carbon: #000000;
+  --carbon-raised: #0e0e0e;
+  --carbon-mid: #1a1a1a;
+  --carbon-line: rgba(255, 255, 255, 0.08);
+  --willow: #E60000;
+  --willow-dim: rgba(230, 0, 0, 0.25);
+  --seam: #FF0000;
+  --pitch: #050505;
+  --bone: #F5F5F0;
+  --bone-dim: rgba(245, 245, 240, 0.55);
+  --chrome: #6b6b6b;
+}
+
+/* ─── Reset & Base ─── */
+* { cursor: none; box-sizing: border-box; }
+@media (pointer: coarse) { 
+  * { cursor: auto; } 
+  #cursor-dot, #cursor-ring { display: none; } 
+}
+
+html, body { 
+  background: var(--carbon); 
+  scroll-behavior: smooth;
+}
+body {
+  font-family: 'Inter', sans-serif;
+  color: var(--bone);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+h1, h2, h3, h4, .font-display { font-family: 'Unbounded', sans-serif; }
+.font-mono { font-family: 'Space Mono', monospace; }
+
+/* ─── Selection ─── */
+::selection { background: var(--willow); color: var(--bone); }
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--carbon); }
+::-webkit-scrollbar-thumb { background: var(--willow); border-radius: 0; }
+
+/* ─── Focus ─── */
+:focus-visible { 
+  outline: 1.5px solid var(--willow); 
+  outline-offset: 3px; 
+  border-radius: 2px;
+}
+
+/* ─── Grain / film texture ─── */
+.grain-overlay {
+  position: fixed; inset: 0; z-index: 60; pointer-events: none;
+  opacity: 0.04; mix-blend-mode: overlay;
+}
+
+/* ─── Custom cursor (classic dot+ring) ─── */
+#cursor-dot, #cursor-ring {
+  position: fixed; top: 0; left: 0; pointer-events: none !important; z-index: 999999 !important;
+  border-radius: 50%; transform: translate(-50%, -50%);
+  transition: width .22s cubic-bezier(.16,1,.3,1), height .22s cubic-bezier(.16,1,.3,1), 
+              background .22s ease, border-color .22s ease, opacity .2s ease;
+}
+#cursor-dot { width: 5px; height: 5px; background: var(--willow); }
+#cursor-ring { 
+  width: 32px; height: 32px; 
+  border: 1px solid rgba(230,0,0,0.4); 
+  background: transparent;
+  transition: all 0.25s cubic-bezier(.16,1,.3,1);
+}
+#cursor-ring.hovering { 
+  width: 58px; height: 58px; 
+  border-color: var(--willow); 
+  background: rgba(230, 0, 0, 0.06); 
+}
+#cursor-ring .ring-label {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-family: 'Space Mono', monospace; font-size: 8px; letter-spacing: .18em; color: var(--willow);
+  opacity: 0; transition: opacity .2s ease; text-transform: uppercase;
+}
+#cursor-ring.hovering .ring-label { opacity: 1; }
+
+/* ─── Seam stitch divider ─── */
+.seam-divider { width: 100%; height: 10px; }
+.seam-divider svg { width: 100%; height: 100%; display: block; }
+
+/* ─── Marquee ─── */
+@keyframes marquee { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }
+@keyframes marquee-reverse { 0% { transform: translateX(-50%); } 100% { transform: translateX(0%); } }
+.animate-marquee { display: inline-block; white-space: nowrap; animation: marquee 28s linear infinite; }
+.animate-marquee-reverse { display: inline-block; white-space: nowrap; animation: marquee-reverse 28s linear infinite; }
+
+/* ─── Technical grid ─── */
+.blueprint-grid {
+  background-image:
+    linear-gradient(rgba(0,0,0,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.08) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+.blueprint-grid-light {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+.noise-dark {
+  background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* ─── Reveal on scroll ─── */
+.reveal { 
+  opacity: 0; 
+  transform: translateY(32px); 
+  transition: opacity 0.85s cubic-bezier(.16,1,.3,1), transform 0.85s cubic-bezier(.16,1,.3,1); 
+}
+.reveal.is-visible { opacity: 1; transform: translateY(0); }
+.reveal-left { 
+  opacity: 0; 
+  transform: translateX(-32px); 
+  transition: opacity 0.85s cubic-bezier(.16,1,.3,1), transform 0.85s cubic-bezier(.16,1,.3,1);
+}
+.reveal-left.is-visible { opacity: 1; transform: translateX(0); }
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.96);
+  transition: opacity 0.85s cubic-bezier(.16,1,.3,1), transform 0.85s cubic-bezier(.16,1,.3,1);
+}
+.reveal-scale.is-visible { opacity: 1; transform: scale(1); }
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.32s; }
+.reveal-delay-4 { transition-delay: 0.44s; }
+
+/* ─── Tilt / 3D cards ─── */
+.tilt-card { 
+  transform-style: preserve-3d; 
+  transition: transform .14s ease-out, box-shadow .3s ease; 
+  will-change: transform; 
+}
+.tilt-inner { transform-style: preserve-3d; }
+.tilt-pop { transform: translateZ(30px); }
+
+/* ─── Image grading ─── */
+.willow-grade {
+  filter: grayscale(0) saturate(1.05) contrast(1.03) brightness(1);
+  transition: filter 0.5s ease, transform 0.5s ease;
+}
+.group:hover .willow-grade {
+  filter: grayscale(0) saturate(1.2) contrast(1.06) brightness(1.03);
+}
+
+/* ─── Hero 3D scene ─── */
+.hero-scene { perspective: 1600px; }
+.hero-3d { transform-style: preserve-3d; transition: transform .18s ease-out; will-change: transform; }
+
+/* ─── Ball scene (pure CSS 3D) ─── */
+.ball-scene { perspective: 600px; }
+.ball {
+  width: 100%; height: 100%; border-radius: 50%; position: relative;
+  background: radial-gradient(circle at 35% 30%, #ff2020, #b30000 55%, #3a0808 100%);
+  box-shadow: 0 0 70px rgba(230,0,0,0.4), inset -16px -16px 32px rgba(0,0,0,0.6), inset 10px 10px 24px rgba(255,255,255,0.06);
+  animation: spin-ball 9s linear infinite;
+  transform-style: preserve-3d;
+}
+.ball::before, .ball::after {
+  content: ''; position: absolute; inset: 0; border-radius: 50%;
+  border: 1.5px dashed rgba(255,255,255,0.45);
+}
+.ball::before { transform: rotateX(90deg) rotateZ(8deg) scale(0.98); }
+.ball::after { transform: rotateY(90deg) rotateZ(-8deg) scale(0.98); }
+@keyframes spin-ball { from { transform: rotateY(0deg) rotateX(8deg); } to { transform: rotateY(360deg) rotateX(8deg); } }
+
+/* ─── Magnetic buttons ─── */
+.magnetic { transition: transform .2s cubic-bezier(.16,1,.3,1); }
+
+/* ─── Header shrink ─── */
+header.scrolled { height: 60px !important; }
+
+/* ─── Spinning ball ─── */
+@keyframes spin-3d-ball {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.03); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+.animate-spin-3d {
+  animation: spin-3d-ball 12s linear infinite;
+  transform-style: preserve-3d;
+}
+
+/* ─── Slow spin ring ─── */
+@keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.animate-spin-slow { animation: spin-slow 20s linear infinite; }
+@keyframes spin-slow-reverse { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+.animate-spin-slow-reverse { animation: spin-slow-reverse 30s linear infinite; }
+
+/* ─── Cursor ball spin ─── */
+@keyframes cursor-ball-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.cursor-ball-spin { animation: cursor-ball-spin 4s linear infinite; }
+.cursor-ball-shadow { box-shadow: 0 2px 8px rgba(0,0,0,0.5), 0 0 3px rgba(255,255,255,0.15); }
+
+/* ─── Line clamp ─── */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ─── Glass effect ─── */
+.glass {
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.glass-dark {
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,0.07);
+}
+
+/* ─── Button hover underline ─── */
+.link-underline {
+  position: relative;
+  display: inline-block;
+}
+.link-underline::after {
+  content: '';
+  position: absolute;
+  left: 0; bottom: -2px;
+  width: 0; height: 1px;
+  background: var(--willow);
+  transition: width 0.3s cubic-bezier(.16,1,.3,1);
+}
+.link-underline:hover::after { width: 100%; }
+
+/* ─── Number count animation ─── */
+@keyframes count-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.count-animate { animation: count-up 0.4s ease forwards; }
+
+/* ─── Page transition ─── */
+.page-enter {
+  animation: page-in 0.4s cubic-bezier(.16,1,.3,1) forwards;
+}
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Floating animation ─── */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+.animate-float { animation: float 4s ease-in-out infinite; }
+.animate-float-slow { animation: float 6s ease-in-out infinite; }
+
+/* ─── Glow pulse ─── */
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(230,0,0,0.3); }
+  50% { box-shadow: 0 0 40px rgba(230,0,0,0.6); }
+}
+.animate-glow { animation: glow-pulse 2.5s ease-in-out infinite; }
+
+/* ─── Text shimmer ─── */
+@keyframes text-shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.text-shimmer {
+  background: linear-gradient(90deg, #fff 0%, #E60000 50%, #fff 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: text-shimmer 3s linear infinite;
+}
+
+/* ─── Cart badge bounce ─── */
+@keyframes badge-bounce {
+  0%, 100% { transform: scale(1); }
+  30% { transform: scale(1.4); }
+  60% { transform: scale(0.9); }
+}
+.badge-bounce { animation: badge-bounce 0.4s ease; }
+
+/* ─── Reduced motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee, .animate-marquee-reverse, .ball, .animate-spin-3d,
+  .animate-float, .animate-float-slow, .animate-glow, .animate-spin-slow { 
+    animation: none !important; 
+  }
+  .reveal, .reveal-left, .reveal-scale { 
+    transition: none !important; 
+    opacity: 1 !important; 
+    transform: none !important; 
+  }
+  .tilt-card, .hero-3d { transition: none !important; }
+  .page-enter { animation: none !important; }
+}
+
+/* ─── Mobile nav overlay ─── */
+.mobile-nav-overlay {
+  animation: slide-down 0.35s cubic-bezier(.16,1,.3,1) forwards;
+}
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Modal animation ─── */
+.modal-enter {
+  animation: modal-in 0.3s cubic-bezier(.16,1,.3,1) forwards;
+}
+.modal-backdrop {
+  animation: fade-in 0.25s ease forwards;
+}
+@keyframes modal-in {
+  from { opacity: 0; transform: scale(0.96) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ─── Cart drawer animation ─── */
+.drawer-enter {
+  animation: drawer-in 0.35s cubic-bezier(.16,1,.3,1) forwards;
+}
+@keyframes drawer-in {
+  from { opacity: 0; transform: translateX(100%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* ─── Toast ─── */
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(100%) scale(0.9); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes toast-out {
+  from { opacity: 1; transform: translateX(0) scale(1); }
+  to { opacity: 0; transform: translateX(100%) scale(0.9); }
+}
+.toast-enter { animation: toast-in 0.35s cubic-bezier(.16,1,.3,1) forwards; }
+.toast-exit { animation: toast-out 0.3s ease forwards; }
+
+/* ─── Product card hover glow ─── */
+.card-glow:hover {
+  box-shadow: 0 0 0 1px rgba(230,0,0,0.5), 0 16px 40px rgba(0,0,0,0.4);
+}
+
+/* ─── Accent line ─── */
+.accent-line {
+  position: relative;
+  padding-left: 1rem;
+}
+.accent-line::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 2px;
+  background: var(--willow);
+}
+
+/* ─── Tab indicator ─── */
+.tab-active {
+  position: relative;
+}
+.tab-active::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--willow);
+  border-radius: 2px 2px 0 0;
+}
