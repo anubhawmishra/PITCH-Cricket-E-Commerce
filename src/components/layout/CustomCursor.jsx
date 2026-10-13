@@ -2,28 +2,15 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import whiteBallImg from '../../assets/cricket_ball_white2.png';
 
 export const CustomCursor = () => {
-  const ballRef = useRef(null);
-  const posRef = useRef({ mx: -100, my: -100, rx: -100, ry: -100 });
   const [activeShot, setActiveShot] = useState(null);
-  const [isFinePointer, setIsFinePointer] = useState(false);
   const isAnimatingRef = useRef(false);
 
   useEffect(() => {
-    const fine = window.matchMedia('(pointer:fine)').matches;
-    setIsFinePointer(fine);
-
-    const pos = posRef.current;
-    let animId;
     let touchStartX = 0;
     let touchStartY = 0;
     let touchStartTime = 0;
     let isTouchSwiping = false;
     let lastTouchShotTime = 0;
-
-    const handleMouseMove = (e) => {
-      pos.mx = e.clientX;
-      pos.my = e.clientY;
-    };
 
     const triggerShot = (clientX, clientY, target) => {
       if (isAnimatingRef.current) return;
@@ -89,36 +76,17 @@ export const CustomCursor = () => {
       }
     };
 
-    if (fine) {
-      const loop = () => {
-        pos.rx += (pos.mx - pos.rx) * 0.22;
-        pos.ry += (pos.my - pos.ry) * 0.22;
-        if (ballRef.current) {
-          ballRef.current.style.transform = `translate3d(${pos.rx}px, ${pos.ry}px, 0) translate(-50%, -50%)`;
-        }
-        animId = requestAnimationFrame(loop);
-      };
-
-      window.addEventListener('mousemove', handleMouseMove, { passive: true });
-      animId = requestAnimationFrame(loop);
-    }
-
     window.addEventListener('click', handleClick);
     window.addEventListener('touchstart', handleTouchStart, { passive: true });
     window.addEventListener('touchmove', handleTouchMove, { passive: true });
     window.addEventListener('touchend', handleTouchEnd, { passive: true });
 
     return () => {
-      if (fine) {
-        window.removeEventListener('mousemove', handleMouseMove);
-        cancelAnimationFrame(animId);
-      }
       window.removeEventListener('click', handleClick);
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchend', handleTouchEnd);
     };
-
   }, []);
 
   const onShotDone = useCallback(() => {
@@ -128,24 +96,6 @@ export const CustomCursor = () => {
 
   return (
     <>
-      {/* Desktop Mouse Ball Cursor (Only on fine pointer devices) */}
-      {isFinePointer && (
-        <div
-          ref={ballRef}
-          className="fixed top-0 left-0 pointer-events-none z-[999999]"
-          style={{ willChange: 'transform' }}
-        >
-          <div className="w-7 h-7 rounded-full overflow-hidden">
-            <img
-              src={whiteBallImg}
-              alt=""
-              className="w-full h-full object-cover rounded-full pointer-events-none select-none cursor-ball-spin"
-              draggable={false}
-            />
-          </div>
-        </div>
-      )}
-
       {/* Shot Launch & Score Badge (Fires on both desktop and mobile on empty area click/tap) */}
       {activeShot && (
         <ShotScene key={activeShot.id} shot={activeShot} onDone={onShotDone} />

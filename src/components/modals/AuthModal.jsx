@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useStore } from '../../context/StoreContext';
 import { X, Mail, Lock, User, Phone, Eye, EyeOff, Zap, AlertTriangle } from 'lucide-react';
 
 export const AuthModal = () => {
   const { isAuthModalOpen, authMode, setAuthMode, setIsAuthModalOpen, login, register } = useAuth();
+  const { navigateTo } = useStore();
 
   const [formData, setFormData] = useState({ name: '', email: '', password: '', phone: '' });
   const [showPassword, setShowPassword] = useState(false);
@@ -132,6 +134,28 @@ export const AuthModal = () => {
                   className="w-full bg-transparent border-none focus:outline-none text-sm text-bone placeholder-bone/30 font-sans"
                 />
               </Field>
+            )}
+
+            {!isLogin && (
+              <div className="pt-2 text-[10px] font-mono text-bone/50 leading-relaxed">
+                By creating an account, you consent to our{' '}
+                <button
+                  type="button"
+                  onClick={() => { setIsAuthModalOpen(false); navigateTo('privacy-policy'); }}
+                  className="text-willow hover:underline bg-transparent border-none p-0 cursor-pointer font-bold inline"
+                >
+                  Privacy Policy
+                </button>
+                {' '}and agree to our{' '}
+                <button
+                  type="button"
+                  onClick={() => { setIsAuthModalOpen(false); navigateTo('terms'); }}
+                  className="text-willow hover:underline bg-transparent border-none p-0 cursor-pointer font-bold inline"
+                >
+                  Terms &amp; Conditions
+                </button>
+                .
+              </div>
             )}
 
             <button

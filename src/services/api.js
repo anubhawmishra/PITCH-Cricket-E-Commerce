@@ -51,6 +51,7 @@ export const authApi = {
   updateProfile: (data) => patch('/auth/me', data),
   changePassword: (data) => post('/auth/change-password', data),
   addAddress: (data) => post('/auth/addresses', data),
+  deleteAccount: () => del('/auth/me'),
 };
 
 // ─── Products ────────────────────────────────────────────────────────────────

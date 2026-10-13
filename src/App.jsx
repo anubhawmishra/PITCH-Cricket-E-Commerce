@@ -19,6 +19,9 @@ import { TrackOrderPage } from './pages/TrackOrderPage';
 import { ShippingReturnsPage } from './pages/ShippingReturnsPage';
 import { ContactPage } from './pages/ContactPage';
 import { FaqPage } from './pages/FaqPage';
+import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
+import { TermsPage } from './pages/TermsPage';
+import { GrievanceRedressalPage } from './pages/GrievanceRedressalPage';
 
 import { CartDrawer } from './components/modals/CartDrawer';
 import { CheckoutModal } from './components/modals/CheckoutModal';
@@ -40,6 +43,9 @@ const MainContent = () => {
       {activePage === 'shipping-returns' && <ShippingReturnsPage />}
       {activePage === 'contact' && <ContactPage />}
       {activePage === 'faq' && <FaqPage />}
+      {activePage === 'privacy-policy' && <PrivacyPolicyPage />}
+      {activePage === 'terms' && <TermsPage />}
+      {activePage === 'grievance-redressal' && <GrievanceRedressalPage />}
 
       {/* Global Modals & Overlays */}
       <CartDrawer />

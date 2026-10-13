@@ -12,7 +12,6 @@ import {
   Lock,
   Zap,
   AlertTriangle,
-  RefreshCw,
   QrCode,
   Copy,
   Check
@@ -21,7 +20,7 @@ import confetti from 'canvas-confetti';
 import { useAuth } from '../../context/AuthContext';
 
 export const CheckoutModal = () => {
-  const { cart, subtotalPrice, clearCart } = useCart();
+  const { subtotalPrice, clearCart } = useCart();
   const { isCheckoutOpen, setIsCheckoutOpen } = useStore();
   const { user } = useAuth();
   const [step, setStep] = useState(1); // 1: Shipping, 2: Payment, 3: Gateway Processing, 4: Confirmation
@@ -58,7 +57,6 @@ export const CheckoutModal = () => {
   // UPI sandbox state
   const [upiId, setUpiId] = useState('user@okhdfcbank');
   const [selectedBank, setSelectedBank] = useState('HDFC');
-  const [otp, setOtp] = useState('123456');
   const [processingState, setProcessingState] = useState(''); // 'authorizing', 'verifying_otp', 'success'
   const [orderRef, setOrderRef] = useState('');
   const [txnRef, setTxnRef] = useState('');

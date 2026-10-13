@@ -48,6 +48,15 @@ export const StoreProvider = ({ children }) => {
     } else if (hash === 'faq') {
       setActivePage('faq');
       setQuickViewProductState(null);
+    } else if (hash === 'privacy-policy') {
+      setActivePage('privacy-policy');
+      setQuickViewProductState(null);
+    } else if (hash === 'terms') {
+      setActivePage('terms');
+      setQuickViewProductState(null);
+    } else if (hash === 'grievance-redressal') {
+      setActivePage('grievance-redressal');
+      setQuickViewProductState(null);
     } else if (hash === 'account') {
       setIsAccountOpen(true);
     }

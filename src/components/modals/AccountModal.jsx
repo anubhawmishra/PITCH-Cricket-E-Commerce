@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
 import { useStore } from '../../context/StoreContext';
 import { useAuth } from '../../context/AuthContext';
-import { X, User, Package, Award, LogOut, CheckCircle2, LogIn } from 'lucide-react';
+import { useCart } from '../../context/CartContext';
+import { X, User, Package, Award, LogOut, CheckCircle2, LogIn, Shield, Trash2 } from 'lucide-react';
 
 export const AccountModal = () => {
-  const { isAccountOpen, setIsAccountOpen } = useStore();
-  const { user, isAuthenticated, logout, openLogin } = useAuth();
+  const { isAccountOpen, setIsAccountOpen, navigateTo } = useStore();
+  const { user, isAuthenticated, logout, openLogin, deleteAccount } = useAuth();
+  const { showToast } = useCart();
   const [activeTab, setActiveTab] = useState('orders'); // 'orders', 'bats', 'profile'
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   if (!isAccountOpen) return null;
 
@@ -83,6 +87,16 @@ export const AccountModal = () => {
           >
             <Award className="w-3.5 h-3.5" /> Saved Bat Specs
           </button>
+          <button
+            onClick={() => setActiveTab('profile')}
+            className={`py-3 px-4 border-b-2 uppercase tracking-wider transition-colors flex items-center gap-2 ${
+              activeTab === 'profile'
+                ? 'border-willow text-willow font-bold'
+                : 'border-transparent text-bone/60 hover:text-bone'
+            }`}
+          >
+            <Shield className="w-3.5 h-3.5" /> Profile &amp; Privacy
+          </button>
         </div>
 
         {/* Body */}
@@ -154,6 +168,128 @@ export const AccountModal = () => {
                   <div>Hardness: <strong>44 Rock scale</strong></div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {activeTab === 'profile' && (
+            <div className="space-y-6 font-mono text-xs">
+              {isAuthenticated ? (
+                <>
+                  {/* Profile info */}
+                  <div className="p-5 rounded bg-carbon border border-bone/10 space-y-3">
+                    <span className="text-willow font-bold uppercase tracking-wider text-[11px] block">
+                      Account Credentials &amp; Identifiers
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                      <div>
+                        <span className="text-bone/40 text-[10px] uppercase block">Full Name</span>
+                        <p className="font-sans font-bold text-bone">{user?.name || 'Customer'}</p>
+                      </div>
+                      <div>
+                        <span className="text-bone/40 text-[10px] uppercase block">Email Address</span>
+                        <p className="font-sans font-bold text-bone">{user?.email}</p>
+                      </div>
+                      <div>
+                        <span className="text-bone/40 text-[10px] uppercase block">Telephone</span>
+                        <p className="font-sans font-bold text-bone">{user?.phone || 'Not provided'}</p>
+                      </div>
+                      <div>
+                        <span className="text-bone/40 text-[10px] uppercase block">Account Role</span>
+                        <p className="font-sans font-bold text-bone">{user?.role || 'CUSTOMER'}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* DPDP Act Rights & Controls */}
+                  <div className="p-5 rounded bg-carbon border border-bone/10 space-y-4">
+                    <div className="space-y-1">
+                      <span className="text-willow font-bold uppercase tracking-wider text-[11px] block">
+                        Statutory Privacy Rights (DPDP Act, 2023)
+                      </span>
+                      <p className="text-[11px] text-bone/60 font-sans leading-relaxed">
+                        Under the Digital Personal Data Protection Act, 2023, you have the right to access summaries of your personal data, request correction of inaccurate records, or exercise your statutory right to data erasure.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-3 pt-1">
+                      <button
+                        onClick={() => { setIsAccountOpen(false); navigateTo('privacy-policy'); }}
+                        className="bg-carbonRaised border border-bone/20 hover:border-willow/50 px-3 py-2 rounded text-bone text-[11px] transition-colors cursor-pointer"
+                      >
+                        Read Privacy Policy
+                      </button>
+                      <button
+                        onClick={() => { setIsAccountOpen(false); navigateTo('grievance-redressal'); }}
+                        className="bg-carbonRaised border border-bone/20 hover:border-willow/50 px-3 py-2 rounded text-bone text-[11px] transition-colors cursor-pointer"
+                      >
+                        Grievance Redressal Officer
+                      </button>
+                    </div>
+
+                    {/* Deletion Section */}
+                    <div className="border-t border-bone/10 pt-4 mt-2">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div className="space-y-1">
+                          <span className="text-red-400 font-bold uppercase text-[11px] block">
+                            Delete Account &amp; Personal Data (Erasure)
+                          </span>
+                          <p className="text-[10px] text-bone/50 font-sans">
+                            Permanently delete your profile, active sessions, and saved addresses. Commercial tax invoices will be anonymized in compliance with Indian accounting laws.
+                          </p>
+                        </div>
+
+                        {!showDeleteConfirm ? (
+                          <button
+                            onClick={() => setShowDeleteConfirm(true)}
+                            className="flex-shrink-0 bg-red-950/40 hover:bg-red-900/60 border border-red-800/40 text-red-300 px-3 py-2 rounded text-[11px] font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Request Erasure</span>
+                          </button>
+                        ) : (
+                          <div className="flex-shrink-0 flex items-center gap-2">
+                            <button
+                              disabled={isDeleting}
+                              onClick={async () => {
+                                try {
+                                  setIsDeleting(true);
+                                  await deleteAccount();
+                                  showToast('Account and personal data erased successfully');
+                                  setIsAccountOpen(false);
+                                } catch (err) {
+                                  showToast(err.message || 'Erasure request failed');
+                                } finally {
+                                  setIsDeleting(false);
+                                  setShowDeleteConfirm(false);
+                                }
+                              }}
+                              className="bg-red-600 hover:bg-red-700 text-bone px-3 py-2 rounded text-[11px] font-bold uppercase tracking-wider transition-colors disabled:opacity-50 cursor-pointer"
+                            >
+                              {isDeleting ? 'Erasing...' : 'Confirm Delete'}
+                            </button>
+                            <button
+                              onClick={() => setShowDeleteConfirm(false)}
+                              className="border border-bone/20 hover:border-bone/40 text-bone/70 px-3 py-2 rounded text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="p-8 text-center space-y-4">
+                  <p className="text-bone/60 font-sans">Sign in to review your profile and exercise personal data controls.</p>
+                  <button
+                    onClick={() => { setIsAccountOpen(false); openLogin(); }}
+                    className="bg-willow hover:bg-red-700 text-bone px-5 py-2.5 rounded font-mono text-xs uppercase tracking-wider transition-colors cursor-pointer"
+                  >
+                    Sign In
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useStore } from '../../context/StoreContext';
 import { useCart } from '../../context/CartContext';
-import { ArrowUpRight, Mail } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 
 export const Footer = () => {
   const { navigateTo } = useStore();
@@ -90,6 +90,7 @@ export const Footer = () => {
                 { label: 'Track Order', action: () => navigateTo('track-order') },
                 { label: 'Shipping & Delivery', action: () => navigateTo('shipping-returns') },
                 { label: 'Returns Policy', action: () => navigateTo('shipping-returns') },
+                { label: 'Grievance Redressal', action: () => navigateTo('grievance-redressal') },
                 { label: 'Contact Us', action: () => navigateTo('contact') },
                 { label: 'FAQ', action: () => navigateTo('faq') },
               ].map((link) => (
@@ -122,7 +123,7 @@ export const Footer = () => {
               </div>
               <div>
                 <p className="text-bone/30 text-[9px] uppercase tracking-widest mb-1">Workshop</p>
-                <p className="text-bone/60">Mumbai, India & Norfolk, UK</p>
+                <p className="text-bone/60">Mumbai, India &amp; Norfolk, UK</p>
               </div>
             </div>
           </div>
@@ -138,18 +139,26 @@ export const Footer = () => {
 
       {/* Bottom Bar */}
       <div className="border-t border-[var(--carbon-line)] px-6 lg:px-12 py-5 max-w-[1700px] mx-auto">
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-3 font-mono text-[9px] uppercase tracking-widest text-bone/30">
-          <div className="flex flex-col sm:flex-row items-center gap-4">
+        <div className="flex flex-col lg:flex-row justify-between items-center gap-4 font-mono text-[9px] uppercase tracking-widest text-bone/30">
+          <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3">
             <p>© 2026 PITCH CRICKET. All Rights Reserved.</p>
-            <p className="hidden sm:block text-bone/15">|</p>
-            <p>Designed & Developed by <span className="text-bone/50 hover:text-willow transition-colors">Anubhaw Mishra</span></p>
+            <span className="text-bone/15">|</span>
+            <p>Designed &amp; Developed by <span className="text-bone/50 hover:text-willow transition-colors">Anubhaw Mishra</span></p>
+            <span className="text-bone/15">|</span>
+            <span className="text-amber-500/80 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">Demo Sandbox Environment</span>
           </div>
-          <div className="flex items-center gap-4">
-            <button onClick={() => navigateTo('faq')} className="hover:text-bone/60 transition-colors bg-transparent border-none p-0">
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <button onClick={() => navigateTo('privacy-policy')} className="hover:text-bone/80 transition-colors bg-transparent border-none p-0 cursor-pointer">
               Privacy Policy
             </button>
-            <button onClick={() => navigateTo('faq')} className="hover:text-bone/60 transition-colors bg-transparent border-none p-0">
-              Terms
+            <button onClick={() => navigateTo('terms')} className="hover:text-bone/80 transition-colors bg-transparent border-none p-0 cursor-pointer">
+              Terms &amp; Conditions
+            </button>
+            <button onClick={() => navigateTo('grievance-redressal')} className="hover:text-bone/80 transition-colors bg-transparent border-none p-0 cursor-pointer">
+              Grievance Redressal
+            </button>
+            <button onClick={() => navigateTo('shipping-returns')} className="hover:text-bone/80 transition-colors bg-transparent border-none p-0 cursor-pointer">
+              Shipping &amp; Returns
             </button>
           </div>
         </div>

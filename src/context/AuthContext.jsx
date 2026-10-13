@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { authApi, getToken, setToken, clearToken, cartApi } from '../services/api';
-import { useCart } from './CartContext';
 
 const AuthContext = createContext();
 
@@ -78,6 +77,12 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   }, []);
 
+  const deleteAccount = useCallback(async () => {
+    await authApi.deleteAccount();
+    clearToken();
+    setUser(null);
+  }, []);
+
   const openLogin = useCallback(() => {
     setAuthMode('login');
     setIsAuthModalOpen(true);
@@ -100,6 +105,7 @@ export const AuthProvider = ({ children }) => {
       login,
       register,
       logout,
+      deleteAccount,
       openLogin,
       openRegister,
       refreshUser: async () => {

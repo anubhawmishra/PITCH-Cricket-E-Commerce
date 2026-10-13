@@ -1,7 +1,8 @@
 # PITCH™ — Full-Stack AI Cricket E-Commerce Platform
 
-> **Designed & Developed by Anubhaw Mishra**  
-> A premium full-stack cricket equipment marketplace powered by React, Node.js, PostgreSQL, and AI.
+> **Designed & Developed by Anubhaw Mishra**<br />
+> A premium full-stack cricket equipment marketplace powered by React, Node.js, PostgreSQL, and AI.<br />
+> 🌐 **Live Store:** [https://pitch-cricket-store.vercel.app/](https://pitch-cricket-store.vercel.app/)
 
 ---
 
@@ -27,7 +28,7 @@ PITCH™ is a production-quality full-stack cricket e-commerce platform featurin
 | Frontend | React 19, Vite 8, Tailwind CSS 4 |
 | State | Context API (Cart, Store, Auth, Comparison) |
 | Backend | Node.js 20, Express.js |
-| Database | PostgreSQL (Render) |
+| Database | PostgreSQL (Neon Serverless) |
 | ORM | Prisma |
 | Auth | JWT + bcrypt |
 | AI | Google Gemini 1.5 Flash (via backend) |
@@ -190,6 +191,8 @@ GEMINI_MODEL=gemini-1.5-flash
 
 ### Frontend → Vercel
 
+- **Live URL:** [https://pitch-cricket-store.vercel.app/](https://pitch-cricket-store.vercel.app/)
+
 1. Push to GitHub
 2. Connect repo to Vercel
 3. **Root Directory:** `(leave blank or set to project root)`
@@ -199,19 +202,25 @@ GEMINI_MODEL=gemini-1.5-flash
 
 ### Backend → Render
 
+- **Live Service:** [https://pitch-cricket-e-commerce.onrender.com](https://pitch-cricket-e-commerce.onrender.com)
+- **Health Check Endpoint:** [https://pitch-cricket-e-commerce.onrender.com/api/health](https://pitch-cricket-e-commerce.onrender.com/api/health)
+
 1. Create a new **Web Service** on Render
-2. Connect your GitHub repo
+2. Connect your GitHub repository (`main` branch)
 3. **Root Directory:** `backend`
-4. **Build Command:** `npm install && npx prisma generate`
+4. **Build Command:** `npm install && npm run build`
 5. **Start Command:** `npm start`
-6. **Environment Variables:** Add all backend `.env` values
+6. **Environment Variables:** Add `DATABASE_URL`, `DIRECT_URL`, `JWT_SECRET`, `CORS_ORIGIN`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `GEMINI_API_KEY`
 7. **Health Check Path:** `/api/health`
 
-### Database → Render PostgreSQL
+### Database → Neon Serverless PostgreSQL
 
-1. Create PostgreSQL instance on Render
-2. Copy the `DATABASE_URL` to your backend environment variables
-3. After first deploy, run: `node prisma/seed.js` via Render shell
+1. Create a PostgreSQL database on [Neon](https://neon.tech) (PostgreSQL 16+)
+2. In the Neon Console, obtain both connection strings:
+   - **`DATABASE_URL`**: Pooled connection (`-pooler` endpoint) for runtime application operations
+   - **`DIRECT_URL`**: Direct, unpooled connection for Prisma CLI schema operations
+3. Schema validation and client generation: `npm run build` (runs `prisma generate`)
+4. Initial database seeding: `node prisma/seed.js`
 
 ---
 
@@ -249,6 +258,10 @@ GEMINI_MODEL=gemini-1.5-flash
 | POST | `/api/auth/register` | — | Create account |
 | POST | `/api/auth/login` | — | Login |
 | GET | `/api/auth/me` | ✅ | Get profile |
+| PATCH | `/api/auth/me` | ✅ | Update profile (name, phone) |
+| DELETE | `/api/auth/me` | ✅ | Delete account & personal data (DPDP Act erasure) |
+| POST | `/api/auth/change-password` | ✅ | Change account password |
+| POST | `/api/auth/addresses` | ✅ | Save delivery address |
 | GET | `/api/products` | — | List products (filter/sort/search) |
 | GET | `/api/products/:id` | — | Product detail |
 | GET | `/api/products/categories` | — | All categories |
@@ -271,6 +284,21 @@ GEMINI_MODEL=gemini-1.5-flash
 | POST | `/api/payments/verify` | ✅ | Verify payment |
 | POST | `/api/payments/webhook` | — | Razorpay webhook |
 | POST | `/api/friday/chat` | — | FRIDAY AI chat |
+
+---
+
+## 🧪 Testing & Verification Commands
+
+```bash
+# Frontend production build
+npm run build
+
+# Frontend and backend linting
+npm run lint
+
+# Prisma schema validation (from backend directory)
+cd backend && npx prisma validate
+```
 
 ---
 
@@ -311,9 +339,10 @@ GEMINI_MODEL=gemini-1.5-flash
 - [x] Shipping & Returns page
 - [x] Track order page
 - [x] Toast notifications
-- [x] Custom cricket ball cursor
+- [x] Clean native cursor navigation & interactive cricket shot animations
 - [x] Film grain overlay
 - [x] Responsive (mobile/tablet/desktop)
+- [x] Legal & consumer compliance pages (Privacy Policy, Terms, Grievance Redressal, Shipping & Returns)
 
 ---
 

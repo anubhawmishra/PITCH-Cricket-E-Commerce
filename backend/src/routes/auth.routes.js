@@ -1,13 +1,16 @@
 const express = require('express');
 const router = express.Router();
+const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const { z } = require('zod');
 const prisma = require('../lib/prisma');
 const { signToken, authenticate, IN_MEMORY_USERS } = require('../middleware/auth.middleware');
 
 const registerSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
+  name: z.string().min(2, 'Name must be at least 2 characters')
+    .refine(n => n.trim().toLowerCase() !== 'deleted customer', { message: 'Reserved name' }),
+  email: z.string().email('Invalid email address')
+    .refine(e => !e.toLowerCase().endsWith('@erased.pitchcricket.com'), { message: 'Reserved domain' }),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   phone: z.string().optional(),
 });
@@ -218,6 +221,100 @@ router.post('/addresses', authenticate, async (req, res) => {
   } catch (err) {
     console.error('[Auth/AddAddress]', err);
     res.status(500).json({ error: 'Failed to save address' });
+  }
+});
+
+// DELETE /api/auth/me - Statutory Right to Erasure (DPDP Act, 2023 Section 12)
+router.delete('/me', authenticate, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    if (process.env.DATABASE_URL) {
+      const orderCount = await prisma.order.count({ where: { userId } });
+      const scrambledEmail = `deleted_${userId}_${Date.now()}@erased.pitchcricket.com`;
+      const randomSecret = crypto.randomBytes(32).toString('hex');
+      const dummyPasswordHash = await bcrypt.hash(randomSecret, 12);
+
+      await prisma.$transaction(async (tx) => {
+        // Delete user's reviews first to avoid foreign-key constraint violations on Review.userId
+        await tx.review.deleteMany({ where: { userId } });
+
+        // Remove active sessions, cart items, and wishlist items
+        await tx.userSession.deleteMany({ where: { userId } });
+        await tx.cartItem.deleteMany({ where: { userId } });
+        await tx.wishlistItem.deleteMany({ where: { userId } });
+
+        if (orderCount > 0) {
+          // Under applicable Indian statutes (including Section 36 of the Central Goods and
+          // Services Tax Act, 2017 requiring accounts and records to be retained for 72 months
+          // from the annual return due date, Section 128(5) of the Companies Act, 2013 requiring
+          // books of account and vouchers to be retained for 8 financial years for corporate entities,
+          // and Section 44AA of the Income-tax Act, 1961), commercial invoices and order records
+          // must be retained for statutory tax and audit compliance.
+          // In accordance with Section 8(7) and Section 12 of the DPDP Act, 2023, personal data
+          // not required for statutory compliance is erased or anonymized.
+          await tx.user.update({
+            where: { id: userId },
+            data: {
+              name: 'Deleted Customer',
+              email: scrambledEmail,
+              phone: null,
+              password: dummyPasswordHash,
+            },
+          });
+
+          // Identify addresses referenced by existing orders to preserve statutory invoice records
+          const userOrders = await tx.order.findMany({
+            where: { userId },
+            select: { addressId: true },
+          });
+          const referencedAddressIds = [...new Set(userOrders.map((o) => o.addressId).filter(Boolean))];
+
+          // Delete all addresses of this user that are NOT referenced by any orders
+          await tx.address.deleteMany({
+            where: {
+              userId,
+              id: { notIn: referencedAddressIds },
+            },
+          });
+
+          // Retain order-linked address records to maintain foreign-key integrity and
+          // historical order fulfillment records, while minimizing personal data
+          if (referencedAddressIds.length > 0) {
+            await tx.address.updateMany({
+              where: {
+                userId,
+                id: { in: referencedAddressIds },
+              },
+              data: {
+                fullName: 'Customer (Account Erased)',
+                phone: '0000000000',
+                line2: null,
+                label: 'Archived Order Destination',
+                isDefault: false,
+              },
+            });
+          }
+        } else {
+          // No statutory orders to preserve; delete the account completely.
+          // Any unlinked addresses will cascade-delete with User (onDelete: Cascade).
+          await tx.user.delete({ where: { id: userId } });
+        }
+      });
+
+      return res.json({
+        message: 'Account and personal data erased successfully in accordance with DPDP Act, 2023.',
+      });
+    }
+
+    // Fallback in-memory (when DATABASE_URL is not configured)
+    if (req.user.email) {
+      IN_MEMORY_USERS.delete(req.user.email);
+    }
+    return res.json({ message: 'Account and personal data erased successfully.' });
+  } catch (err) {
+    console.error('[Auth/DeleteMe]', err);
+    res.status(500).json({ error: 'Failed to delete account. Please contact our Grievance Officer.' });
   }
 });
 

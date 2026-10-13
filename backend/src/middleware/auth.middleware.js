@@ -26,33 +26,31 @@ const authenticate = async (req, res, next) => {
           select: { id: true, email: true, name: true, role: true },
         });
 
-        if (user) {
-          req.user = user;
-          return next();
+        // Reject if account was deleted from DB or anonymized via account erasure
+        if (!user || user.email.toLowerCase().endsWith('@erased.pitchcricket.com')) {
+          return res.status(401).json({ error: 'Account has been deleted or deactivated' });
         }
-      } catch (e) {
-        // Fall back to memory below
+
+        req.user = user;
+        return next();
+      } catch (dbErr) {
+        console.error('[Auth/Middleware DB query failed]', dbErr.message);
+        // Fail-secure: never authenticate or trust an unverified token when DB status cannot be confirmed
+        return res.status(503).json({ error: 'Authentication service temporarily unavailable. Please retry.' });
       }
     }
 
-    // In-memory lookup or decoded token info
+    // In-memory lookup (dev / offline mode without database)
     const memUser = Array.from(IN_MEMORY_USERS.values()).find(u => u.id === decoded.userId);
     if (memUser) {
+      if (memUser.email && memUser.email.toLowerCase().endsWith('@erased.pitchcricket.com')) {
+        return res.status(401).json({ error: 'Account has been deleted or deactivated' });
+      }
       req.user = { id: memUser.id, name: memUser.name, email: memUser.email, role: memUser.role };
       return next();
     }
 
-    if (decoded.userId) {
-      req.user = {
-        id: decoded.userId,
-        name: decoded.name || 'Pitch Member',
-        email: decoded.email || 'member@pitchwillowlab.com',
-        role: decoded.role || 'CUSTOMER',
-      };
-      return next();
-    }
-
-    return res.status(401).json({ error: 'User not found' });
+    return res.status(401).json({ error: 'User not found or account deleted' });
   } catch (err) {
     if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
       return res.status(401).json({ error: 'Invalid or expired token' });
@@ -80,17 +78,23 @@ const optionalAuth = async (req, res, next) => {
           where: { id: decoded.userId },
           select: { id: true, email: true, name: true, role: true },
         });
-        if (user) {
+        if (user && !user.email.toLowerCase().endsWith('@erased.pitchcricket.com')) {
           req.user = user;
           return next();
         }
+        req.user = null;
+        return next();
       } catch {
-        // fallback
+        // On DB error, fail-secure by treating as unauthenticated guest
+        req.user = null;
+        return next();
       }
     }
 
     const memUser = Array.from(IN_MEMORY_USERS.values()).find(u => u.id === decoded.userId);
-    req.user = memUser ? { id: memUser.id, name: memUser.name, email: memUser.email, role: memUser.role } : null;
+    req.user = (memUser && !memUser.email?.toLowerCase().endsWith('@erased.pitchcricket.com'))
+      ? { id: memUser.id, name: memUser.name, email: memUser.email, role: memUser.role }
+      : null;
     next();
   } catch {
     req.user = null;
